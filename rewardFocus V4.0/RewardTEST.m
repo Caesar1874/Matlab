@@ -429,9 +429,9 @@ try
     
     save(strcat('results\Test\', subName));
 
-    expData = num2cell([(1:nTrials)', trialRewardLevel', trialRewardPosition', trialTestPosition', trialCuePosition', trialCueTypes', trialCueValid', RT', answer', answerCorrect']);
+    expData = num2cell([(1:nTrials)', trialRewardLevel', trialRewardPosition', trialCueTypes', trialCuePosition', trialTestPosition', trialCueValid', RT', answer', answerCorrect']);
     result = [{'subName', 'subGender', 'KeySetting', 'RewardSetting', 'Trial',...
-                                      'RewardLevel',    'RewardPosition',  'TestPosition', 'CuePosition', 'CueType', 'CueValid', 'RT', 'answer', 'answerCorrect'}; ...
+                                      'RewardLevel',  'RewardPosition', 'CueType', 'CuePosition', 'TestPosition',  'CueValid', 'RT', 'answer', 'answerCorrect'}; ...
               repmat({subName}, [nTrials 1]), repmat({subGender}, [nTrials 1]), repmat({rewardSetting}, [nTrials 1]), repmat({keySetting}, [nTrials 1]), expData];
 
     save(strcat('results\Test\MAT_', subName), 'result');

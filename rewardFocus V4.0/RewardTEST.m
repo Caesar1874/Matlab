@@ -23,124 +23,11 @@ try
     olds=Screen('TextSize',window,28);
     Screen('TextFont',window,'Microsoft Yahei');
     
-%% 定义按键反应
-    KbName('UnifyKeyNames');
-    if keySetting == 1
-        keyF = KbName('LEFTARROW');% yes
-        keyJ = KbName('RIGHTARROW');% no
-    else
-        keyF = KbName('RIGHTARROW');% yes
-        keyJ = KbName('LEFTARROW');% no
-    end
-    keyESC = KbName('ESCAPE');
-    
-%% 读取刺激
-    %6种形状
-    mapTex = zeros([1 6]);
-    imgNum = 10;
-    for texIndex = 1:imgNum
-        [im, imMap, imAlpha] = imread(['stimuli\m', num2str(texIndex), '.png']);
-        im(:, :, 4) = imAlpha;
-        mapTex(1, texIndex) = Screen('MakeTexture', window, im);  
-    end
-
-    [im, imMap, imAlpha] = imread('stimuli\arrow.png')
-    im(:, :, 4) = imAlpha;
-    barTex = Screen('MakeTexture', window, im);
-    [im, imMap, imAlpha] = imread('stimuli\target.png')
-    im(:, :, 4) = imAlpha;
-    targetTex = Screen('MakeTexture', window, im);     
-
-    %8种颜色
-    red=[255 0 0];
-    green=[0 255 0];
-    blue=[0 0 255];
-    yellow=[255 255 0];
-    cyan=[0 255 255];
-    purple=[255 0 255];
-    black=[0 0 0];
-    pink = [255, 204, 204];
-    
-    nonRewardColorSet=[blue; yellow; cyan; black; pink; purple]; 
-    
-    %奖励联结颜色
-    if rewardSetting==1
-        highRewardColor=red;
-        lowRewardColor=green;
-    elseif rewardSetting==2
-        highRewardColor=green;
-        lowRewardColor=red;
-    end
-    
-    % 读取图形材料
-    greetingTex = Screen('MakeTexture', window, ceil(imread('material\start.bmp')));
-    pauseTex = Screen('MakeTexture', window, ceil(imread('material\pause.bmp')));
-    endTex = Screen('MakeTexture', window, ceil(imread('material\end.bmp')));
-    errorTex = Screen('MakeTexture', window, ceil(imread('material\error.png', 'BackGround', backgroundColor/255)));
-    correctTex = Screen('MakeTexture', window, ceil(imread('material\correct.png', 'BackGround', backgroundColor/255)));
-    restTex = Screen('MakeTexture', window, ceil(imread('material\rest.png')));
-    endTex = Screen('MakeTexture', window, ceil(imread('material\ending.png')));
-    rewardTex = Screen('MakeTexture', window, ceil(imread('material\reward.png')));
-    
-    
-%% 定义实验参数
-
-%大圆的半径
-    radius = 110; %220  小圆圆心到注视点
-    
-    %小圆的半径
-    sectionRadius = 45; %45 小圆的半径 bar的一半
-    
-    % 小圆圆心的坐标
-    sections=cell([1 6]);
-    sections{1} = [screenCenter(1)+radius*cos(11*pi/6),screenCenter(2)+radius*sin(11*pi/6)];
-    sections{2 }=[screenCenter(1)+radius*cos(3*pi/2),screenCenter(2)+radius*sin(3*pi/2)];
-    sections{3}=[screenCenter(1)+radius*cos(7*pi/6),screenCenter(2)+radius*sin(7*pi/6)];
-    sections{4}=[screenCenter(1)+radius*cos(5*pi/6),screenCenter(2)+radius*sin(5*pi/6)];
-    sections{5}= [screenCenter(1)+radius*cos(pi/2),screenCenter(2)+radius*sin(pi/2)];
-    sections{6}= [screenCenter(1)+radius*cos(pi/6),screenCenter(2)+radius*sin(pi/6)];
-    
-    %小圆轮廓坐标
-    % sectionRects = cell([1 6]); 
-    row1 = [sections{1}(1)-sectionRadius,sections{1}(2)-sectionRadius,sections{1}(1)+sectionRadius,sections{1}(2)+sectionRadius];
-    row2 = [sections{2}(1)-sectionRadius,sections{2}(2)-sectionRadius,sections{2}(1)+sectionRadius,sections{2}(2)+sectionRadius];
-    row3 = [sections{3}(1)-sectionRadius,sections{3}(2)-sectionRadius,sections{3}(1)+sectionRadius,sections{3}(2)+sectionRadius];
-    row4 = [sections{4}(1)-sectionRadius,sections{4}(2)-sectionRadius,sections{4}(1)+sectionRadius,sections{4}(2)+sectionRadius];
-    row5 = [sections{5}(1)-sectionRadius,sections{5}(2)-sectionRadius,sections{5}(1)+sectionRadius,sections{5}(2)+sectionRadius]; 
-    row6 = [sections{6}(1)-sectionRadius,sections{6}(2)-sectionRadius,sections{6}(1)+sectionRadius,sections{6}(2)+sectionRadius];
-    % 6 * 4， 使用时应该转置
-    sectionRects = [row1; row2; row3; row4; row5; row6];
-   
-    % 检测项
-    mapSize = 150; 
-    topLeft=[screenCenter(1)-mapSize/2, screenCenter(2)-mapSize/2];
-    topRight=[screenCenter(1)+mapSize/2, screenCenter(2)-mapSize/2];
-    bottomRight=[screenCenter(1)+mapSize/2, screenCenter(2)+mapSize/2];
-    bottomLeft=[screenCenter(1)-mapSize/2, screenCenter(2)+mapSize/2];
-    
-    %注视点
-    fixSize = [15 2]*2;
-    fixRects = [CenterRect([0 0 fixSize], screenRect); ...
-                CenterRect([0 0 fliplr(fixSize)], screenRect)];
-    
-    %trial数
+%% 生成实验条件
+    % trial数
     nTrials = 1296;
     triNTrials=nTrials/3;
- 
-    
-    %时间
-    trialInterval = rand([1 nTrials]) * 0.5 + 1;
-    fixDuration = (400 + 200 * rand([1 nTrials])) / 1000;
-    sectionPreviewDuration = 100 / 1000; %100ms
-%     cueDuration = 100 / 1000;
-    ISI = 1000 / 1000; % 400ms空屏
-    RTLimit = 3000 / 1000;
-    beforeTestkDuration = 1000 / 1000;
-    feedDuration = 500 / 1000;
-%     feedbackDuration = 1500 / 1000;
-    
-%% 生成实验条件
-    %条件数
+    % 条件数
     nConditions = 1296;  
     
     %无奖励
@@ -188,21 +75,126 @@ try
     
     trialCueValid = zeros(1, nTrials);
     trialCueValid(trialTestPosition == trialCuePosition) = 1;
-        
+    
+
+%% 读取图片
+    % 指导语
+    greetingTex = Screen('MakeTexture', window, ceil(imread('material\start.bmp')));
+    errorTex = Screen('MakeTexture', window, ceil(imread('material\error.png', 'BackGround', backgroundColor/255)));
+    correctTex = Screen('MakeTexture', window, ceil(imread('material\correct.png', 'BackGround', backgroundColor/255)));
+    restTex = Screen('MakeTexture', window, ceil(imread('material\rest.png')));
+    endTex = Screen('MakeTexture', window, ceil(imread('material\ending.png')));
+
+    % 刺激材料
+    mapTex = zeros([1 6]);
+    imgNum = 10;
+    for texIndex = 1:imgNum
+        [im, imMap, imAlpha] = imread(['stimuli\m', num2str(texIndex), '.png']);
+        im(:, :, 4) = imAlpha;
+        mapTex(1, texIndex) = Screen('MakeTexture', window, im);  
+    end
+
+    [im, imMap, imAlpha] = imread('stimuli\arrow.png')
+    im(:, :, 4) = imAlpha;
+    barTex = Screen('MakeTexture', window, im);
+    [im, imMap, imAlpha] = imread('stimuli\target.png')
+    im(:, :, 4) = imAlpha;
+    targetTex = Screen('MakeTexture', window, im);     
+    
+%% 定义按键反应
+    KbName('UnifyKeyNames');
+    if keySetting == 1
+        keyF = KbName('LEFTARROW');% yes
+        keyJ = KbName('RIGHTARROW');% no
+    else
+        keyF = KbName('RIGHTARROW');% yes
+        keyJ = KbName('LEFTARROW');% no
+    end
+    keyESC = KbName('ESCAPE');
+    
+%% 刺激呈现参数
+    % 颜色
+    % 8 种
+    red=[255 0 0];
+    green=[0 255 0];
+    blue=[0 0 255];
+    yellow=[255 255 0];
+    cyan=[0 255 255];
+    purple=[255 0 255];
+    black=[0 0 0];
+    pink = [255, 204, 204];
+    % 非奖励联结颜色
+    nonRewardColorSet=[blue; yellow; cyan; black; pink; purple]; 
+    %奖励联结颜色
+    if rewardSetting==1
+        highRewardColor=red;
+        lowRewardColor=green;
+    elseif rewardSetting==2
+        highRewardColor=green;
+        lowRewardColor=red;
+    end
+    
+    % 位置
+    % 大圆的半径 小圆圆心到注视点
+    radius = 110; 
+    %小圆的半径
+    sectionRadius = 45; %45 小圆的半径 bar的一半
+    
+    % 小圆圆心的坐标
+    sections=cell([1 6]);
+    sections{1} = [screenCenter(1)+radius*cos(11*pi/6),screenCenter(2)+radius*sin(11*pi/6)];
+    sections{2 }=[screenCenter(1)+radius*cos(3*pi/2),screenCenter(2)+radius*sin(3*pi/2)];
+    sections{3}=[screenCenter(1)+radius*cos(7*pi/6),screenCenter(2)+radius*sin(7*pi/6)];
+    sections{4}=[screenCenter(1)+radius*cos(5*pi/6),screenCenter(2)+radius*sin(5*pi/6)];
+    sections{5}= [screenCenter(1)+radius*cos(pi/2),screenCenter(2)+radius*sin(pi/2)];
+    sections{6}= [screenCenter(1)+radius*cos(pi/6),screenCenter(2)+radius*sin(pi/6)];
+    
+    %小圆轮廓坐标
+    row1 = [sections{1}(1)-sectionRadius,sections{1}(2)-sectionRadius,sections{1}(1)+sectionRadius,sections{1}(2)+sectionRadius];
+    row2 = [sections{2}(1)-sectionRadius,sections{2}(2)-sectionRadius,sections{2}(1)+sectionRadius,sections{2}(2)+sectionRadius];
+    row3 = [sections{3}(1)-sectionRadius,sections{3}(2)-sectionRadius,sections{3}(1)+sectionRadius,sections{3}(2)+sectionRadius];
+    row4 = [sections{4}(1)-sectionRadius,sections{4}(2)-sectionRadius,sections{4}(1)+sectionRadius,sections{4}(2)+sectionRadius];
+    row5 = [sections{5}(1)-sectionRadius,sections{5}(2)-sectionRadius,sections{5}(1)+sectionRadius,sections{5}(2)+sectionRadius]; 
+    row6 = [sections{6}(1)-sectionRadius,sections{6}(2)-sectionRadius,sections{6}(1)+sectionRadius,sections{6}(2)+sectionRadius];
+    % 6 * 4， 使用时应该转置
+    sectionRects = [row1; row2; row3; row4; row5; row6];
+   
+    % 检测项
+    mapSize = 150; 
+    topLeft=[screenCenter(1)-mapSize/2, screenCenter(2)-mapSize/2];
+    topRight=[screenCenter(1)+mapSize/2, screenCenter(2)-mapSize/2];
+    bottomRight=[screenCenter(1)+mapSize/2, screenCenter(2)+mapSize/2];
+    bottomLeft=[screenCenter(1)-mapSize/2, screenCenter(2)+mapSize/2];
+    
+    %注视点
+    fixSize = [15 2]*2;
+    fixRects = [CenterRect([0 0 fixSize], screenRect); ...
+                CenterRect([0 0 fliplr(fixSize)], screenRect)];
+    
+    % 时间
+    trialInterval = rand([1 nTrials]) * 0.5 + 1;
+    fixDuration = (400 + 200 * rand([1 nTrials])) / 1000;
+    % 刺激呈现时间
+    stimuliDuration = 1000 / 1000; 
+    beforeCueDuration = 100 / 1000;
+    cueDuration = 200 / 1000;
+    beforeTestDuration = 1000 / 1000;
+    testFixDuration = 1000 / 1000; 
+    RTLimit = 3000 / 1000;
+    feedDuration = 500 / 1000;
+    
 %% 变量
     answer = zeros([1 nTrials]);
     answerCorrect = zeros([1 nTrials]);
     RT = zeros([1, nTrials]);
-    
-    %各条件计数
+    % 各条件计数
     nonRewardIndex = 1;
     highRewardIndex = 1;
     lowRewardIndex = 1;
     rewardIndex = 1;
   
 %% 开始实验
-%准备
-     greetingTex = Screen('MakeTexture', window, ceil(imread('material\start.bmp')));
+    % 准备
      Screen('DrawTexture', window, greetingTex);
      keyisdown = 1;
     while(keyisdown) % first wait until all keys are released
@@ -214,14 +206,14 @@ try
     isRunning = true;
     keyOperation = false;
     
-%进入实验   
-    for trialIndex = 1:nTrials
+    % 进入实验   
+    for trialIndex = 1: 10 %nTrials
         %初始化参数
         block = find(blockPoints == trialIndex);
         if block > 0
             cueType = blockTypes(1, block);
         end
-        
+          
         currentColorSet=zeros(6,3);
         texOrder = randperm(imgNum);
         
@@ -237,14 +229,13 @@ try
 			%呈现刺激
 			% 同时绘制六个颜色 + 六个透明形状
 			for positionIndex = 1 : 6
-				% 颜色
 				Screen('FillRect', window, nonRewardColorSet(positionIndex, : ), sectionRects(positionIndex, : ));
-				% 形状
-				% map  只有六个形状，肯定是不行的
 				Screen('DrawTexture', window, mapTex(1, texOrder(positionIndex)), [], sectionRects(positionIndex, : ));
 			end
 			Screen('Flip', window);
-			WaitSecs(ISI);
+			WaitSecs(stimuliDuration);
+            Screen('Flip', window);
+            WaitSecs(beforeCueDuration);
 			
 			% cue 
             if cueType == 1 
@@ -255,15 +246,16 @@ try
             else
                 squareCuePos = sectionRects(trialCuePosition(trialIndex), :);
                 Screen('DrawTexture', window, targetTex, [], squareCuePos);
-                % Screen('FrameRect', window, [255, 255, 255], squareCuePos, 3);
             end
 			Screen('Flip', window);
-			WaitSecs(2);
+			WaitSecs(cueDuration);
+            Screen('Flip', window);
+            WaitSecs(beforeTestDuration);
 
 		   %检测
            Screen('FillRect', window, foreColor, fixRects');
            Screen('Flip', window);
-           WaitSecs( beforeTestkDuration);	
+           WaitSecs(testFixDuration);	
            Screen('FillRect', window, testColor , [topLeft,bottomRight]);
            Screen('DrawTexture', window, mapTex(texOrder( trialTestPosition(trialIndex))), [], [topLeft,bottomRight]); 
            Screen('Flip', window);
@@ -288,7 +280,9 @@ try
 					currentColorSet(positionIndex,:)=currentColor;
 				end
 				Screen('Flip', window);
-				WaitSecs(ISI);
+				WaitSecs(stimuliDuration);
+                Screen('Flip', window);
+                WaitSecs(beforeCueDuration);
 
                % cue 
                 if cueType == 1 
@@ -299,16 +293,17 @@ try
                 else
                     squareCuePos = sectionRects(trialCuePosition(trialIndex), :);
                     Screen('DrawTexture', window, targetTex, [], squareCuePos);
-                % Screen('FrameRect', window, [255, 255, 255], squareCuePos, 3);
                 end
                 Screen('Flip', window);
-                WaitSecs(2);
+                WaitSecs(cueDuration);
+                Screen('Flip', window);
+                WaitSecs(beforeTestDuration);
 
                 
 				%检测
 				Screen('FillRect', window, foreColor, fixRects');
 				Screen('Flip', window);
-				WaitSecs( beforeTestkDuration);	
+				WaitSecs(testFixDuration);	
 				Screen('FillRect', window, testColor , [topLeft,bottomRight]);
 				Screen('DrawTexture', window, mapTex(texOrder( trialTestPosition(trialIndex))), [], [topLeft,bottomRight]); 
 				Screen('Flip', window);
@@ -332,7 +327,9 @@ try
 					
 				end
 				Screen('Flip', window);
-				WaitSecs(ISI);
+				WaitSecs(stimuliDuration);
+                Screen('Flip', window);
+                WaitSecs(beforeCueDuration);
                 
 				% cue 
                 if cueType == 1 
@@ -343,16 +340,16 @@ try
                 else
                     squareCuePos = sectionRects(trialCuePosition(trialIndex), :);
                     Screen('DrawTexture', window, targetTex, [], squareCuePos);
-                % Screen('FrameRect', window, [255, 255, 255], squareCuePos, 3);
                 end
                 Screen('Flip', window);
-                WaitSecs(2);
-
+                WaitSecs(cueDuration);
+                Screen('Flip', window);
+                WaitSecs(beforeTestDuration);
 
 				%检测
 				Screen('FillRect', window, foreColor, fixRects');
 				Screen('Flip', window);
-				WaitSecs( beforeTestkDuration);	
+				WaitSecs(testFixDuration);	
 				Screen('FillRect', window, testColor , [topLeft,bottomRight]);
 				Screen('DrawTexture', window, mapTex(texOrder( trialTestPosition(trialIndex))), [], [topLeft,bottomRight]); 
 				Screen('Flip', window);
@@ -362,7 +359,7 @@ try
             rewardIndex=rewardIndex + 1;
         end
 
-        %收集反应
+        % 收集反应
         startTime = GetSecs;
         while GetSecs - startTime < RTLimit
             [keyDown, keyTime, keyState] = KbCheck();
@@ -418,8 +415,6 @@ try
           end
           KbWait;
         end
-
-	 
     end
     
     

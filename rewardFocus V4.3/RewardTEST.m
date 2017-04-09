@@ -25,37 +25,37 @@ try
     
 %% 生成实验条件
     % trial数
-    nTrials = 810;
+    nTrials = 480;
     thirdTrials = nTrials / 3;
+    nPos = 4;
 %%new start
     rewardLevel = 2;
-    rewardPos = 9;
+    rewardPos = nPos / rewardLevel * 3;
     nRewardCondition = rewardLevel * rewardPos;
-    rewardCondition = ShiftMod(randperm(nTrials), nRewardCondition); % 1 ~ 18
-    % 1-6: 奖励， 7~9 无奖励
+    rewardCondition = ShiftMod(randperm(nTrials), nRewardCondition); % 1 ~ 12
+    % 1-4: 奖励， 5~6 无奖励
     trialRewardPos = ceil(rewardCondition / rewardLevel); 
-    trialRewardPos(trialRewardPos > 6) = 0;
+    trialRewardPos(trialRewardPos > nPos) = 0;
     % 0: noReward, 1: high reward, 2: lowreward
     trialRewardLevel = ShiftMod(rewardCondition, rewardLevel); % 1-2
     trialRewardLevel(trialRewardPos == 0) = 0;
 
     % 
-    testPos = 12;
-    cuePos = 6;
+    testPos = nPos * 2;
+    cuePos = nPos;
     nCueCondition = testPos * cuePos;
     cueCondition = ShiftMod(randperm(nTrials), nCueCondition); % 1~72
     % 1~6 cueValid, 0: no valid
     trialTestPos = ceil(cueCondition / cuePos);
-    trialTestPos(trialTestPos > 6) = 0;
+    trialTestPos(trialTestPos > nPos) = 0;
     trialCuePos = ShiftMod(cueCondition, cuePos);
     
     trialCueValidate = zeros(1,nTrials);
     trialCueValidate(trialTestPos == trialCuePos) = 1;
     
-    
     % cueType
     nBlocks = 10;
-    blockLength = 81;
+    blockLength = nTrials / nBlocks;
     blockPoints = zeros(1, nBlocks);
     for index = 1 : nBlocks
         blockPoints(index) = (index - 1) * blockLength + 1;
@@ -79,15 +79,15 @@ try
     
 %% new end
     %无奖励
-    nonRewardCondition = zeros(thirdTrials,6);
+    nonRewardCondition = zeros(thirdTrials, nPos);
     %高奖励
-    highRewardCondition = zeros(thirdTrials,6);
+    highRewardCondition = zeros(thirdTrials, nPos);
     %低奖励
-    lowRewardCondition = zeros(thirdTrials,6);
+    lowRewardCondition = zeros(thirdTrials, nPos);
     for i=1:thirdTrials
-        nonRewardCondition(i,:) = randperm(6);
-        highRewardCondition(i,:) = randperm(6);
-        lowRewardCondition(i,:) = randperm(6);
+        nonRewardCondition(i,:) = randperm(nPos);
+        highRewardCondition(i,:) = randperm(nPos);
+        lowRewardCondition(i,:) = randperm(nPos);
     end
    
 %% 读取图片
@@ -99,8 +99,8 @@ try
     endTex = Screen('MakeTexture', window, ceil(imread('material\ending.png')));
 
     % 刺激材料
-    mapTex = zeros([1 6]);
     imgNum = 10;
+    mapTex = zeros(1, imgNum);
     for texIndex = 1:imgNum
         [im, imMap, imAlpha] = imread(['stimuli\m', num2str(texIndex), '.png']);
         im(:, :, 4) = imAlpha;
@@ -149,31 +149,27 @@ try
     
     % 位置
     % 大圆的半径 小圆圆心到注视点
-    radius = 150; 
+    radius = 120; 
     %小圆的半径
     sectionRadius = 45; %45 小圆的半径 bar的一半
+    % 检测项
+    mapSize = 90;
     
     % 小圆圆心的坐标
-    sections=cell([1 6]);
-    sections{1} = [screenCenter(1)+radius*cos(11*pi/6),screenCenter(2)+radius*sin(11*pi/6)];
-    sections{2 }=[screenCenter(1)+radius*cos(3*pi/2),screenCenter(2)+radius*sin(3*pi/2)];
-    sections{3}=[screenCenter(1)+radius*cos(7*pi/6),screenCenter(2)+radius*sin(7*pi/6)];
-    sections{4}=[screenCenter(1)+radius*cos(5*pi/6),screenCenter(2)+radius*sin(5*pi/6)];
-    sections{5}= [screenCenter(1)+radius*cos(pi/2),screenCenter(2)+radius*sin(pi/2)];
-    sections{6}= [screenCenter(1)+radius*cos(pi/6),screenCenter(2)+radius*sin(pi/6)];
+    sections=cell([1 4]);
+    sections{1} = [screenCenter(1), screenCenter(2) - radius];
+    sections{2} = [screenCenter(1) + radius, screenCenter(2)];
+    sections{3} = [screenCenter(1), screenCenter(2) + radius];
+    sections{4} = [screenCenter(1) - radius, screenCenter(2)];
     
     %小圆轮廓坐标
     row1 = [sections{1}(1)-sectionRadius,sections{1}(2)-sectionRadius,sections{1}(1)+sectionRadius,sections{1}(2)+sectionRadius];
     row2 = [sections{2}(1)-sectionRadius,sections{2}(2)-sectionRadius,sections{2}(1)+sectionRadius,sections{2}(2)+sectionRadius];
     row3 = [sections{3}(1)-sectionRadius,sections{3}(2)-sectionRadius,sections{3}(1)+sectionRadius,sections{3}(2)+sectionRadius];
     row4 = [sections{4}(1)-sectionRadius,sections{4}(2)-sectionRadius,sections{4}(1)+sectionRadius,sections{4}(2)+sectionRadius];
-    row5 = [sections{5}(1)-sectionRadius,sections{5}(2)-sectionRadius,sections{5}(1)+sectionRadius,sections{5}(2)+sectionRadius]; 
-    row6 = [sections{6}(1)-sectionRadius,sections{6}(2)-sectionRadius,sections{6}(1)+sectionRadius,sections{6}(2)+sectionRadius];
     % 6 * 4， 使用时应该转置
-    sectionRects = [row1; row2; row3; row4; row5; row6];
+    sectionRects = [row1; row2; row3; row4];
    
-    % 检测项
-    mapSize = 150; 
     topLeft=[screenCenter(1)-mapSize/2, screenCenter(2)-mapSize/2];
     topRight=[screenCenter(1)+mapSize/2, screenCenter(2)-mapSize/2];
     bottomRight=[screenCenter(1)+mapSize/2, screenCenter(2)+mapSize/2];
@@ -188,7 +184,7 @@ try
     trialInterval = rand([1 nTrials]) * 0.5 + 1;
     fixDuration = (400 + 200 * rand([1 nTrials])) / 1000;
     % 刺激呈现时间
-    stimuliDuration = 1200 / 1000; 
+    stimuliDuration = 1000 / 1000; 
     beforeCueDuration = 200 / 1000;
     cueDuration = 300 / 1000;
     beforeTestDuration = 1000 / 1000;
@@ -221,17 +217,20 @@ try
     
     % 进入实验   
     for trialIndex = 1: nTrials
-        %初始化参数
+        % 初始化参数
+        % block tye
         block = find(blockPoints == trialIndex);
         if block > 0
             cueType = blockTypes(1, block);
         end
-        currentColorSet=zeros(6,3);
+        currentColorSet=zeros(nPos,3);
+        % tex order
         texOrder = randperm(imgNum);
         
+        % 呈现注视点
         Screen('Flip', window);
         WaitSecs(trialInterval(trialIndex));
-        % 呈现注视点
+       
         Screen('FillRect', window, foreColor, fixRects');
         Screen('Flip', window);
         WaitSecs(fixDuration(trialIndex));
@@ -240,9 +239,9 @@ try
             % Screen('DrawText', window, '无奖励')
 			
             %呈现刺激
-			for posIndex = 1 : 6
+			for posIndex = 1 : nPos
 				Screen('FillRect', window, nonRewardColorSet(posIndex, : ), sectionRects(posIndex, : ));
-				Screen('DrawTexture', window, mapTex(1, texOrder(posIndex)), [], sectionRects(posIndex, : ));
+				Screen('DrawTexture', window, mapTex(texOrder(posIndex)), [], sectionRects(posIndex, : ));
 			end
 			Screen('Flip', window);
 			WaitSecs(stimuliDuration);
@@ -252,7 +251,7 @@ try
 			% cue
             if cueType == 1 
                 arrowCuePos = [screenCenter(1) - 50, screenCenter(2) - 50, screenCenter(1) + 50, screenCenter(2) + 50];
-                rotationAngle = 60 * trialCuePos(trialIndex);
+                rotationAngle = 360 / nPos * trialCuePos(trialIndex);
                 Screen('DrawTexture', window, barTex, [], arrowCuePos, rotationAngle);
             else
                 squareCuePos = sectionRects(trialCuePos(trialIndex), :);
@@ -285,7 +284,7 @@ try
             % Screen('DrawText', window, '高奖励')
             %高奖励
             %呈现
-            for posIndex=1:6
+            for posIndex=1 : nPos
                 if posIndex == trialRewardPos(trialIndex)
                    currentColor = highRewardColor; % 颜色
                 else
@@ -306,7 +305,7 @@ try
            % cue 
             if cueType == 1 
                 arrowCuePos = [screenCenter(1) - 50, screenCenter(2) - 50, screenCenter(1) + 50, screenCenter(2) + 50];
-                rotationAngle = 60 * trialCuePos(trialIndex);
+                rotationAngle = 360 / nPos * trialCuePos(trialIndex);
                 Screen('DrawTexture', window, barTex, [], arrowCuePos, rotationAngle);
             else
                 squareCuePos = sectionRects(trialCuePos(trialIndex), :);
@@ -338,7 +337,7 @@ try
         elseif trialRewardLevel(trialIndex) == 2
             % Screen('DrawText', window, '低奖励')
             %呈现
-            for posIndex=1:6
+            for posIndex=1 : nPos
                 if posIndex==trialRewardPos(trialIndex)
                    currentColor=lowRewardColor; % 颜色
                 else   
@@ -361,7 +360,7 @@ try
             if cueType == 1 
                 arrowCuePos = [screenCenter(1) - 50, screenCenter(2) - 50, screenCenter(1) + 50, screenCenter(2) + 50];
 
-            rotationAngle = 60 * trialCuePos(trialIndex);
+            rotationAngle = 360 / nPos * trialCuePos(trialIndex);
                 Screen('DrawTexture', window, barTex, [], arrowCuePos, rotationAngle);
             else
                 squareCuePos = sectionRects(trialCuePos(trialIndex), :);

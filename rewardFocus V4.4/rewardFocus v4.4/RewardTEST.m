@@ -40,18 +40,25 @@ try
     trialRewardLevel = ShiftMod(rewardCondition, rewardLevel); % 1-2
     trialRewardLevel(trialRewardPos == 0) = 0;
 
-    % 
+    
     testPos = nPos * 2;
     cuePos = nPos;
     nCueCondition = testPos * cuePos;
     cueCondition = ShiftMod(randperm(nTrials), nCueCondition); % 1~72
-    % 1~6 cueValid, 0: no valid
+    % 1~4 5~8
     trialTestPos = ceil(cueCondition / cuePos);
-    trialTestPos(trialTestPos > nPos) = 0;
     trialCuePos = ShiftMod(cueCondition, cuePos);
-    
+%     for index = 1 : nTrials
+%        if(trialTestPos(index) < 5)
+%           trialTestPos(index) = trialCuePos(index); 
+%        end
+%     end
     trialCueValidate = zeros(1,nTrials);
     trialCueValidate(trialTestPos == trialCuePos) = 1;
+    
+    trialRewardValidate = zeros(1, nTrials);
+    trialRewardValidate(trialRewardPos == trialCuePos) = 1;
+    
     
     % cueType
     nBlocks = 10;
@@ -184,12 +191,11 @@ try
     trialInterval = rand([1 nTrials]) * 0.5 + 1;
     fixDuration = (400 + 200 * rand([1 nTrials])) / 1000;
     % 刺激呈现时间
-    stimuliDuration = 1000 / 1000; 
-    beforeCueDuration = 200 / 1000;
+    stimuliDuration = 600 / 1000; 
+    beforeCueDuration = 400 / 1000;
     cueDuration = 300 / 1000;
-    beforeTestDuration = 1000 / 1000;
-    testFixDuration = 1000 / 1000; 
-    RTLimit = 3000 / 1000;
+    beforeTestDuration = 500 / 1000;
+    RTLimit = 2000 / 1000;
     feedDuration = 500 / 1000;
     
 %% 变量
@@ -216,7 +222,7 @@ try
     keyOperation = false;
     
     % 进入实验   
-    for trialIndex = 1: nTrials
+    for trialIndex = 1 : nTrials
         % 初始化参数
         % block tye
         block = find(blockPoints == trialIndex);
@@ -263,17 +269,14 @@ try
             WaitSecs(beforeTestDuration);
 
 		   %检测
-%            if trialCueValidate(trialIndex) == 1 
-%               testPos =  trialCuePos(trialIndex);
+%            if trialCueValidate(trialIndex) == 1
+%                testPos = trialTestPos(trialIndex);
+%                cue = '有效';
 %            else
-%               testPos = trialTestPos(cueValidIndex);
-%               cueValidIndex = cueValidIndex + 1;
+%                testPos = trialTestPos(trialIndex);
+%                cue = '无效';
 %            end
-           
-           testPos =  trialCuePos(trialIndex);
-           Screen('FillRect', window, foreColor, fixRects');
-           Screen('Flip', window);
-           WaitSecs(testFixDuration);	
+           testPos = trialTestPos(trialIndex);
            Screen('FillRect', window, testColor , [topLeft,bottomRight]);
            Screen('DrawTexture', window, mapTex(texOrder(testPos)), [], [topLeft,bottomRight]); 
            Screen('Flip', window);
@@ -315,19 +318,16 @@ try
             WaitSecs(cueDuration);
             Screen('Flip', window);
             WaitSecs(beforeTestDuration);
-
-
-            %检测
-%                 if trialCueValidate(trialIndex) == 1 
-%                     testPos =  trialCuePos(trialIndex);
-%                 else
-%                     testPos = trialTestPos(cueValidIndex);
-%                     cueValidIndex = cueValidIndex + 1; 
-%                 end
-            testPos =  trialCuePos(trialIndex);
-            Screen('FillRect', window, foreColor, fixRects');
-            Screen('Flip', window);
-            WaitSecs(testFixDuration);	
+            
+            % 检测
+%             if trialCueValidate(trialIndex) == 1
+%                testPos = trialCuePos(trialIndex);
+%                cue = '有效';
+%             else
+%                testPos = trialTestPos(trialIndex);
+%                cue = '无效';
+%             end
+            testPos = trialTestPos(trialIndex);
             Screen('FillRect', window, testColor , [topLeft,bottomRight]);
             Screen('DrawTexture', window, mapTex(texOrder(testPos)), [], [topLeft,bottomRight]); 
             Screen('Flip', window);
@@ -336,7 +336,7 @@ try
             rewardIndex = rewardIndex + 1;
         elseif trialRewardLevel(trialIndex) == 2
             % Screen('DrawText', window, '低奖励')
-            %呈现
+            % 呈现
             for posIndex=1 : nPos
                 if posIndex==trialRewardPos(trialIndex)
                    currentColor=lowRewardColor; % 颜色
@@ -349,7 +349,6 @@ try
                 % map  只有六个形状，肯定是不行的
                 Screen('DrawTexture', window, mapTex(texOrder(posIndex)), [], sectionRects(posIndex, : ));  
                 currentColorSet(posIndex,:)=currentColor;
-
             end
             Screen('Flip', window);
             WaitSecs(stimuliDuration);
@@ -359,8 +358,7 @@ try
             % cue 
             if cueType == 1 
                 arrowCuePos = [screenCenter(1) - 50, screenCenter(2) - 50, screenCenter(1) + 50, screenCenter(2) + 50];
-
-            rotationAngle = 360 / nPos * trialCuePos(trialIndex);
+                rotationAngle = 360 / nPos * trialCuePos(trialIndex);
                 Screen('DrawTexture', window, barTex, [], arrowCuePos, rotationAngle);
             else
                 squareCuePos = sectionRects(trialCuePos(trialIndex), :);
@@ -372,16 +370,14 @@ try
             WaitSecs(beforeTestDuration);
 
             %检测
-            testPos =  trialCuePos(trialIndex);
-%                 if trialCueValidate(trialIndex) == 1 
-%                     testPos =  trialCuePos(trialIndex);
-%                 else
-%                     testPos = trialTestPos(cueValidIndex);
-%                     cueValidIndex = cueValidIndex + 1; 
-%                 end
-            Screen('FillRect', window, foreColor, fixRects');
-            Screen('Flip', window);
-            WaitSecs(testFixDuration);	
+%             if trialCueValidate(trialIndex) == 1
+%                testPos = trialCuePos(trialIndex);
+%                cue = '有效';
+%             else
+%                testPos = trialTestPos(trialIndex);
+%                cue = '无效';
+%             end
+            testPos = trialTestPos(trialIndex);
             Screen('FillRect', window, testColor , [topLeft,bottomRight]);
             Screen('DrawTexture', window, mapTex(texOrder(testPos)), [], [topLeft,bottomRight]); 
             Screen('Flip', window);
@@ -389,8 +385,6 @@ try
             lowRewardIndex=lowRewardIndex+1;
             rewardIndex=rewardIndex + 1;
         end
-            
-        % end
 
         % 收集反应
         startTime = GetSecs;
@@ -452,14 +446,15 @@ try
     
     
     % 保存数据
+    trialTestPos(trialTestPos > nPos) = 0;
     currentTime = datestr(now);
     currentTime(currentTime == ':') = '-';
     
     save(strcat('results\Test\', subName));
 
-    expData = num2cell([(1:nTrials)', trialRewardLevel', trialRewardPos', trialCueTypes', trialCuePos', trialTestPos', trialCueValidate', RT', answer', answerCorrect']);
+    expData = num2cell([(1:nTrials)', trialRewardLevel', trialRewardPos', trialCueTypes', trialCuePos', trialTestPos', trialCueValidate', trialRewardValidate', RT', answer', answerCorrect']);
     result = [{'subName', 'subGender', 'KeySetting', 'RewardSetting', 'Trial',...
-                                      'RewardLevel',  'RewardPosition', 'CueType', 'CuePosition', 'TestPosition',  'CueValid', 'RT', 'answer', 'answerCorrect'}; ...
+                                      'RewardLevel',  'RewardPosition', 'CueType', 'CuePosition', 'TestPosition',  'CueValid', 'RewardValid', 'RT', 'answer', 'answerCorrect'}; ...
               repmat({subName}, [nTrials 1]), repmat({subGender}, [nTrials 1]), repmat({rewardSetting}, [nTrials 1]), repmat({keySetting}, [nTrials 1]), expData];
 
     save(strcat('results\Test\MAT_', subName), 'result');
@@ -472,7 +467,7 @@ try
     %结束
 %     Screen('TextColor',window,[0,0,0]);
     Screen('DrawTexture', window, endTex);
-    DrawFormattedText(window, [num2str(Sample([0.73, 0.75, 0.74, 0.76, 0.77]))], screenRect(3) / 2, screenRect(4) / 2 - 65 ); 
+    DrawFormattedText(window, [num2str(Sample([0.51, 0.52, 0.53, 0.54, 0.55]))], screenRect(3) / 2, screenRect(4) / 2 - 65 ); 
     
 %     DrawFormattedText(window, ['请不要进行任何操作并联系主试，谢谢合作'], 'center', screenRect(4) / 2 + 30 ); 
     keyisdown = 1;
